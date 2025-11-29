@@ -1,5 +1,5 @@
 # msfetch
-a rust based neofetch clone for mac
+a rust based neofetch clone 
 
 ## To run
 ```
