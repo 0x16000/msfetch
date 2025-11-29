@@ -1,77 +1,33 @@
 use owo_colors::OwoColorize;
 use std::process::Command;
-#[allow(dead_code)]
-#[cfg(target_os = "macos")]
-
-mod colors {
-    pub const CYAN: &str = "\x1b[36m";
-}
 
 fn main() {
     fetch();
 }
+
 fn fetch() {
-    let asciiart = r#"    /\
-   /  \ 
+    let asciiart = r#"   
+    /\
+   /  \
   /    \
   \    /
    \  /
     \/"#;
-    let ascii = asciiart;
 
-    println!("{}", colors::CYAN);
-    let namey = "User".cyan();
-    let memy = "Memory".green();
-    let kernely = "Kernel".yellow();
-    let shelly = "Shell".purple();
-
-    let output = Command::new("whoami")
-        .output()
-        .expect("Failed to execute command");
-    let username = String::from_utf8_lossy(&output.stdout);
-
-    let name = Command::new("uname")
-        .arg("-n")
-        .output()
-        .expect("Failed to execute command");
-    let hostname = String::from_utf8_lossy(&name.stdout);
-
-    let mem = Command::new("sysctl")
-        .arg("hw.memsize")
-        .output()
-        .expect("Failed to execute command");
-    let mem_string = String::from_utf8(mem.stdout).unwrap();
-    let memory = mem_string.trim().split(": ").collect::<Vec<&str>>()[1]
-        .parse::<u64>()
-        .unwrap()
-        / 1024
-        / 1024;
-
-    let oskernel = Command::new("uname")
-        .output()
-        .expect("Failed to execute command");
-    let os = String::from_utf8_lossy(&oskernel.stdout);
-
-    let oskernelname = Command::new("uname")
-        .arg("-r")
-        .output()
-        .expect("Failed to execute command");
-    let os_name = String::from_utf8_lossy(&oskernelname.stdout);
-
-    let shell_output = Command::new("sh")
-        .arg("-c")
-        .arg("echo $SHELL")
-        .output()
-        .expect("Failed to execute command");
-    let shell = String::from_utf8_lossy(&shell_output.stdout);
+    let username = get_username();
+    let hostname = get_hostname();
+    let memory = get_memory();
+    let (os, os_version) = get_os_info();
+    let shell = get_shell();
 
     let side_text = [
-        format!("{}: {}@{}", namey, username.trim(), hostname.trim()),
-        format!("{}: {} MB", memy, memory),
-        format!("{}: {} {}", kernely, os.trim(), os_name.trim()),
-        format!("{}: {}", shelly, shell.trim()),
+        format!("{}: {}@{}", "User".cyan(), username.trim(), hostname.trim()),
+        format!("{}: {} MB", "Memory".green(), memory),
+        format!("{}: {} {}", "Kernel".yellow(), os.trim(), os_version.trim()),
+        format!("{}: {}", "Shell".purple(), shell.trim()),
     ];
-    let ascii_lines: Vec<&str> = ascii.lines().collect();
+
+    let ascii_lines: Vec<&str> = asciiart.lines().collect();
     let total_lines = ascii_lines.len();
     let text_lines = side_text.len();
     let start = (total_lines - text_lines) / 2;
@@ -79,9 +35,77 @@ fn fetch() {
     for (i, line) in ascii_lines.iter().enumerate() {
         if i >= start && i < start + text_lines {
             let text = &side_text[i - start];
-            println!("{:<8}  {:<3}", line, text);
+            println!("{:<8}  {}", line.blue(), text);
         } else {
-            println!("{}", line);
+            println!("{}", line.blue());
         }
     }
+}
+
+fn get_username() -> String {
+    let output = Command::new("whoami")
+        .output()
+        .expect("Failed to execute command");
+    String::from_utf8_lossy(&output.stdout).to_string()
+}
+
+fn get_hostname() -> String {
+    let output = Command::new("uname")
+        .arg("-n")
+        .output()
+        .expect("Failed to execute command");
+    String::from_utf8_lossy(&output.stdout).to_string()
+}
+
+#[cfg(target_os = "macos")]
+fn get_memory() -> u64 {
+    let output = Command::new("sysctl")
+        .arg("hw.memsize")
+        .output()
+        .expect("Failed to execute command");
+    let mem_string = String::from_utf8(output.stdout).unwrap();
+    mem_string
+        .trim()
+        .split(": ")
+        .nth(1)
+        .unwrap()
+        .parse::<u64>()
+        .unwrap()
+        / 1024
+        / 1024
+}
+
+#[cfg(target_os = "linux")]
+fn get_memory() -> u64 {
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg("grep MemTotal /proc/meminfo | awk '{print $2}'")
+        .output()
+        .expect("Failed to execute command");
+    let mem_string = String::from_utf8(output.stdout).unwrap();
+    mem_string.trim().parse::<u64>().unwrap() / 1024
+}
+
+fn get_os_info() -> (String, String) {
+    let os_output = Command::new("uname")
+        .output()
+        .expect("Failed to execute command");
+    let os = String::from_utf8_lossy(&os_output.stdout).to_string();
+
+    let version_output = Command::new("uname")
+        .arg("-r")
+        .output()
+        .expect("Failed to execute command");
+    let version = String::from_utf8_lossy(&version_output.stdout).to_string();
+
+    (os, version)
+}
+
+fn get_shell() -> String {
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg("echo $SHELL")
+        .output()
+        .expect("Failed to execute command");
+    String::from_utf8_lossy(&output.stdout).to_string()
 }
