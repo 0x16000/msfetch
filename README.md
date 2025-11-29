@@ -1,7 +1,7 @@
 # msfetch
 a rust based neofetch clone for mac
 
-## install
+## To run
 ```
 make sure you have rust installed
 git clone https://github.com/St1ryNight/msfetch/
