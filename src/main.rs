@@ -1,14 +1,13 @@
 use owo_colors::OwoColorize;
 use std::process::Command;
-
+mod mem;
 fn main() {
     fetch();
 }
 
 fn fetch() {
     // here to change ascii art
-    let asciiart = r#"   
-    /\
+    let asciiart = r#"    /\
    /  \
   /    \
   \    /
@@ -17,7 +16,7 @@ fn fetch() {
 
     let username = get_username();
     let hostname = get_hostname();
-    let memory = get_memory();
+    let memory = mem::get_memory();
     let (os, os_version) = get_os_info();
     let shell = get_shell();
 
@@ -63,70 +62,7 @@ fn get_hostname() -> String {
     String::from_utf8_lossy(&output.stdout).to_string()
 }
 
-#[cfg(target_os = "macos")]
-fn get_memory() -> u64 {
-    let output = Command::new("sysctl")
-        .arg("hw.memsize")
-        .output()
-        .expect("Failed to execute command");
-    let mem_string = String::from_utf8(output.stdout).unwrap();
-    mem_string
-        .trim()
-        .split(": ")
-        .nth(1)
-        .unwrap()
-        .parse::<u64>()
-        .unwrap()
-        / 1024
-        / 1024
-}
 
-#[cfg(target_os = "linux")]
-fn get_memory() -> u64 {
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg("grep MemTotal /proc/meminfo | awk '{print $2}'")
-        .output()
-        .expect("Failed to execute command");
-    let mem_string = String::from_utf8(output.stdout).unwrap();
-    mem_string.trim().parse::<u64>().unwrap() / 1024
-}
-#[cfg(target_os = "freebsd")]
-fn get_memory() -> u64 {
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg("sysctl hw.physmem")
-        .output()
-        .expect("Failed to execute command");
-    let mem_string = String::from_utf8(output.stdout).unwrap();
-    mem_string
-        .trim()
-        .split(": ")
-        .nth(1)
-        .unwrap()
-        .parse::<u64>()
-        .unwrap()
-        / 1024
-        / 1024
-}
-#[cfg(target_os = "openbsd")]
-fn get_memory() -> u64 {
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg("sysctl hw.physmem")
-        .output()
-        .expect("Failed to execute command");
-    let mem_string = String::from_utf8(output.stdout).unwrap();
-    mem_string
-        .trim()
-        .split(": ")
-        .nth(1)
-        .unwrap()
-        .parse::<u64>()
-        .unwrap()
-        / 1024
-        / 1024
-}
 fn get_os_info() -> (String, String) {
     let os_output = Command::new("uname")
         .output()
