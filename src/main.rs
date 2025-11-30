@@ -6,6 +6,7 @@ fn main() {
 }
 
 fn fetch() {
+    // here to change ascii art
     let asciiart = r#"   
     /\
    /  \
@@ -21,10 +22,15 @@ fn fetch() {
     let shell = get_shell();
 
     let side_text = [
-        format!("{}: {}@{}", "User".cyan(), username.trim(), hostname.trim()),
+        format!(
+            "{}:   {}@{}",
+            "User".cyan(),
+            username.trim(),
+            hostname.trim()
+        ),
         format!("{}: {} MB", "Memory".green(), memory),
         format!("{}: {} {}", "Kernel".yellow(), os.trim(), os_version.trim()),
-        format!("{}: {}", "Shell".purple(), shell.trim()),
+        format!("{}:  {}", "Shell".purple(), shell.trim()),
     ];
 
     let ascii_lines: Vec<&str> = asciiart.lines().collect();
@@ -85,7 +91,42 @@ fn get_memory() -> u64 {
     let mem_string = String::from_utf8(output.stdout).unwrap();
     mem_string.trim().parse::<u64>().unwrap() / 1024
 }
-
+#[cfg(target_os = "freebsd")]
+fn get_memory() -> u64 {
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg("sysctl hw.physmem")
+        .output()
+        .expect("Failed to execute command");
+    let mem_string = String::from_utf8(output.stdout).unwrap();
+    mem_string
+        .trim()
+        .split(": ")
+        .nth(1)
+        .unwrap()
+        .parse::<u64>()
+        .unwrap()
+        / 1024
+        / 1024
+}
+#[cfg(target_os = "openbsd")]
+fn get_memory() -> u64 {
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg("sysctl hw.physmem")
+        .output()
+        .expect("Failed to execute command");
+    let mem_string = String::from_utf8(output.stdout).unwrap();
+    mem_string
+        .trim()
+        .split(": ")
+        .nth(1)
+        .unwrap()
+        .parse::<u64>()
+        .unwrap()
+        / 1024
+        / 1024
+}
 fn get_os_info() -> (String, String) {
     let os_output = Command::new("uname")
         .output()
