@@ -50,7 +50,7 @@ pub fn get_cpu() -> String {
    let output_str = String::from_utf8_lossy(&output.stdout).to_string();
    output_str
    .trim()
-   .split(": ")
+   .split("=")
    .nth(1)
    .unwrap()
    .trim()
