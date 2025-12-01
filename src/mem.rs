@@ -1,6 +1,6 @@
 use std::process::Command;
 #[cfg(target_os = "macos")]
-pub fn get_memory() -> u64 {
+ pub fn get_memory() -> u64 {
     let output = Command::new("sysctl")
         .arg("hw.memsize")
         .output()
