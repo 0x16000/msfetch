@@ -2,7 +2,6 @@ use owo_colors::OwoColorize;
 use std::process::Command;
 mod mem;
 mod cpu;
-mod shell_version;
 fn main() {
     fetch();
 }
@@ -21,7 +20,6 @@ fn fetch() {
     let memory = mem::get_memory();
     let (os, os_version) = get_os_info();
     let _shell = get_shell();
-    let shell = shell_version::get_shell_version(); 
     let cpu = cpu::get_cpu();
 
     let side_text = [
@@ -33,7 +31,7 @@ fn fetch() {
         ),
         format!("{}: {} MB", "Memory".green(), memory),
         format!("{}: {} {}", "Kernel".yellow(), os.trim(), os_version.trim()),
-        format!("{}:  {} {}", "Shell".purple(), _shell.trim(), shell.trim()),
+        format!("{}:  {}", "Shell".purple(), _shell.trim()),
         format!("{}:    {}", "Cpu".white(), cpu.trim()),
     ];
 
