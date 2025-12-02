@@ -2,6 +2,7 @@ use owo_colors::OwoColorize;
 use std::process::Command;
 mod mem;
 mod cpu;
+mod os;
 fn main() {
     fetch();
 }
@@ -17,6 +18,7 @@ fn fetch() {
 
     let username = get_username();
     let hostname = get_hostname();
+    let os_info = os::get_os();
     let memory = mem::get_memory();
     let (os, os_version) = get_os_info();
     let _shell = get_shell();
@@ -29,10 +31,12 @@ fn fetch() {
             username.trim(),
             hostname.trim()
         ),
-        format!("{}: {} MB", "Memory".green(), memory),
+        format!("{}:     {}", "OS".magenta(), os_info.trim()),
         format!("{}: {} {}", "Kernel".yellow(), os.trim(), os_version.trim()),
-        format!("{}:  {}", "Shell".purple(), _shell.trim()),
+        format!("{}: {} MB", "Memory".green(), memory),
         format!("{}:    {}", "Cpu".white(), cpu.trim()),
+        format!("{}:  {}", "Shell".purple(), _shell.trim()),
+
     ];
 
     let ascii_lines: Vec<&str> = asciiart.lines().collect();
